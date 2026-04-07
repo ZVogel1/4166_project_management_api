@@ -1,0 +1,81 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Project {
+  id Int @id @default(autoincrement())
+  name String
+  description String
+  members ProjectMember[]
+  tasks Task[]
+  createdAt DateTime @default(now())
+
+  @@map ("projects")
+}
+
+model Task {
+  id Int @id @default(autoincrement())
+  assigneeId Int @map("assignee_id")
+  creatorId Int @map("creator_id")
+  projectId Int @map("project_id")
+  description String
+  comments Comment[]
+  status String @default("todo") // "todo", "in_progress", "done"
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  assignee User @relation("Assignee", fields: [assigneeId], references: [id])
+  creator User @relation("Creator", fields: [creatorId], references: [id])
+  @@index([projectId])
+  @@index([assigneeId])
+  @@index([creatorId])
+  @@map ("tasks")
+}
+
+model Comment {
+  id Int @id @default(autoincrement())
+  taskId Int @map("task_id")
+  authorId Int @map("author_id")
+  content String
+  createdAt DateTime @default(now())
+
+  task Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  author User @relation(fields: [authorId], references: [id])
+  @@index ([taskId])
+  @@index([authorId])
+  @@map ("comments")
+}
+
+model User {
+  id Int @id @default(autoincrement())
+  email String @unique
+  password String
+  role String @default("user") // "user" or "admin"
+  comments Comment[]
+  projectMembers ProjectMember[]
+  assignedTasks Task[] @relation("Assignee")
+  createdTasks Task[] @relation("Creator")
+
+  @@map ("users")
+}
+
+model ProjectMember {
+  userId Int @map("user_id")
+  projectId Int @map("project_id")
+
+  user User @relation(fields: [userId], references: [id])
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@id([userId, projectId])
+  @@index([projectId])
+  @@map("project_members")
+}
