@@ -1,12 +1,14 @@
 import express from 'express';
 import { getAllProjectsHandler, getProjectByIdHandler, createProjectHandler, updateProjectHandler, deleteProjectHandler } from '../controllers/projectController.js';
+import { authenticate } from '../middleware/authenticate.js';
+import { authorizeRoles } from '../middleware/authorizeRoles.js';
 
 const router = express.Router();
 
-router.get('/', getAllProjectsHandler);
-router.get('/:id', getProjectByIdHandler);
-router.post('/', createProjectHandler);
-router.put('/:id', updateProjectHandler);
-router.delete('/:id', deleteProjectHandler);
+router.get('/', authenticate, getAllProjectsHandler);
+router.get('/:id', authenticate, getProjectByIdHandler);
+router.post('/', authenticate, createProjectHandler);
+router.put('/:id', authenticate, updateProjectHandler);
+router.delete('/:id', authenticate, authorizeRoles('ADMIN'), deleteProjectHandler);
 
 export default router;

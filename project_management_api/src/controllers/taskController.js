@@ -48,8 +48,8 @@ export async function createTaskHandler(req, res) {
 
 export async function updateTaskHandler(req, res) {
     const id = parseInt(req.params.id);
-    const { content } = req.body;
-    const updatedTask = await updateTask(id, { description });
+    const { description, status, assigneeId } = req.body;
+    const updatedTask = await updateTask(id, { description, status, assigneeId });
     res.status(200).json(updatedTask);
 }
 

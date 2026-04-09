@@ -22,18 +22,14 @@ export async function getById(id) {
     return user;
 }
 
+export async function findUserByEmail(email) {
+    return prisma.user.findUnique({ where: { email } });
+}
+
 
 export async function create(resourceData) {
     const newUser = await prisma.user.create({ data: resourceData });
     return newUser;
-}
-
-export async function createUser(resourceData) {
-    return create(resourceData);
-}
-
-export async function findUserByEmail(email) {
-    return prisma.user.findUnique({ where: { email } });
 }
 
 
