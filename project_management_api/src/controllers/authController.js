@@ -8,6 +8,6 @@ export async function signUpHandler(req, res) {
 
 export async function logInHandler(req, res) {
   const { email, password } = req.body;
-  const accessToken = await logIn(email, password);
+  const accessToken = await logIn(email, password, role );
   res.status(200).json({ accessToken });
 }
