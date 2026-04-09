@@ -1,5 +1,11 @@
 import { prisma } from "../prisma/config.js";
 
+const publicUserFields = {
+    id: true,
+    email: true,
+    role: true,
+};
+
 export async function getAll({ search, sortBy, order, offset, limit }) {
     const conditions = {};
     if (search) {
@@ -12,13 +18,17 @@ export async function getAll({ search, sortBy, order, offset, limit }) {
         orderBy: { [sortBy]: order },
         take: limit,
         skip: offset,
+        select: publicUserFields,
     });
     return users;
 }
 
 
 export async function getById(id) {
-    const user = await prisma.user.findUnique({ where: { id } });
+    const user = await prisma.user.findUnique({
+        where: { id },
+        select: publicUserFields,
+    });
     return user;
 }
 
@@ -28,7 +38,10 @@ export async function findUserByEmail(email) {
 
 
 export async function create(resourceData) {
-    const newUser = await prisma.user.create({ data: resourceData });
+    const newUser = await prisma.user.create({
+        data: resourceData,
+        select: publicUserFields,
+    });
     return newUser;
 }
 
@@ -38,6 +51,7 @@ export async function update(id, updatedData) {
         const updatedUser = await prisma.user.update({
             where: { id },
             data: updatedData,
+            select: publicUserFields,
         });
         return updatedUser;
     } catch (error) {
@@ -49,6 +63,7 @@ export async function remove(id) {
     try {
         const deletedUser = await prisma.user.delete({
             where: { id },
+            select: publicUserFields,
         });
         return deletedUser;
     } catch (error) {
