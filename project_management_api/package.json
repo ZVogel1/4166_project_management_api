@@ -7,7 +7,11 @@
   "type": "module",
   "main": "index.js",
   "scripts": {
-    "dev": "node --env-file=.env --watch src/server.js"
+    "dev": "node --env-file=.env --watch src/server.js",
+    "start": "node src/server.js",
+    "db:migrate:deploy": "prisma migrate deploy",
+    "db:seed": "node prisma/seed.js",
+    "render-build": "npm install && npm run db:migrate:deploy && npm run db:seed"
   },
   "devDependencies": {
     "@eslint/js": "^9.29.0",
@@ -25,7 +29,11 @@
     "express": "^5.2.1",
     "express-rate-limit": "^8.3.2",
     "express-validator": "^7.3.2",
+    "js-yaml": "^4.1.1",
     "jsonwebtoken": "^9.0.3",
-    "pg": "^8.20.0"
+    "morgan": "^1.10.1",
+    "pg": "^8.20.0",
+    "swagger-ui-express": "^5.0.1",
+    "yamljs": "^0.3.0"
   }
 }

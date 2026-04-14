@@ -23,6 +23,8 @@ export const validateSignUp = [
 
   body('role')
     .optional()
+    .trim()
+    .toUpperCase()
     .isIn(['USER', 'ADMIN'])
     .withMessage('Role must be either USER or ADMIN'),
 

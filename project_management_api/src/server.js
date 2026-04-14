@@ -1,4 +1,8 @@
 import express from 'express';
+import morgan from 'morgan';
+import swaggerUi from 'swagger-ui-express';
+import yaml from 'js-yaml';
+import fs from 'fs';
 import authRoutes from './routes/authRoutes.js';
 import userRoute from './routes/userRoute.js';
 import projectRoute from './routes/projectRoute.js';
@@ -8,13 +12,18 @@ import commentRoute from './routes/commentRoute.js';
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-
 app.use(express.json());
+if (process.env.NODE_ENV !== 'test') app.use(morgan('tiny'));
 
-app.get('/', (req, res) => {
-  res.status(200).json({ message: 'Project Management API is running' });
-});
+let specs;
+try{
+  specs = yaml.load(fs.readFileSync('./docs/openAPI.yml', 'utf8'));
+} catch (e) {
+  console.error('Error loading API documentation:', e);
+  process.exit(1);
+}
 
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoute);
 app.use('/api/projects', projectRoute);
