@@ -1,114 +1,47 @@
 import bcrypt from 'bcrypt';
+import 'dotenv/config';
 import { prisma } from '../src/prisma/config.js';
 
-const SAMPLE_PROJECT_NAMES = ['Seed Project Alpha', 'Seed Project Beta'];
+try {
+    await prisma.$executeRawUnsafe(
+        'TRUNCATE TABLE comments, tasks, project_members, projects, users RESTART IDENTITY CASCADE;'
+    );
 
-async function upsertKnownUsers() {
-    const user6PasswordHash = await bcrypt.hash('password6', 10);
-    const user5PasswordHash = await bcrypt.hash('password5', 10);
+    const usersData = [
+        { email: 'user6@test.com', password: 'password6', role: 'ADMIN' },
+        { email: 'user5@test.com', password: 'password5', role: 'USER' },
+    ];
 
-    const adminUser = await prisma.user.upsert({
-        where: { email: 'user6@test.com' },
-        update: {
-            password: user6PasswordHash,
-            role: 'ADMIN',
-        },
-        create: {
-            email: 'user6@test.com',
-            password: user6PasswordHash,
-            role: 'ADMIN',
-        },
-        select: {
-            id: true,
-            email: true,
-            role: true,
-        },
-    });
+    const users = [];
 
-    const regularUser = await prisma.user.upsert({
-        where: { email: 'user5@test.com' },
-        update: {
-            password: user5PasswordHash,
-            role: 'USER',
-        },
-        create: {
-            email: 'user5@test.com',
-            password: user5PasswordHash,
-            role: 'USER',
-        },
-        select: {
-            id: true,
-            email: true,
-            role: true,
-        },
-    });
+    for (const userData of usersData) {
+        const hashedPassword = await bcrypt.hash(userData.password, 10);
 
-    return { adminUser, regularUser };
-}
-
-async function resetSampleResources() {
-    const sampleProjects = await prisma.project.findMany({
-        where: {
-            name: {
-                in: SAMPLE_PROJECT_NAMES,
-            },
-        },
-        select: {
-            id: true,
-        },
-    });
-
-    const sampleProjectIds = sampleProjects.map((project) => project.id);
-
-    if (sampleProjectIds.length > 0) {
-        await prisma.comment.deleteMany({
-            where: {
-                task: {
-                    projectId: {
-                        in: sampleProjectIds,
-                    },
-                },
+        const user = await prisma.user.create({
+            data: {
+                email: userData.email,
+                password: hashedPassword,
+                role: userData.role || 'USER',
             },
         });
 
-        await prisma.task.deleteMany({
-            where: {
-                projectId: {
-                    in: sampleProjectIds,
-                },
-            },
-        });
-
-        await prisma.projectMember.deleteMany({
-            where: {
-                projectId: {
-                    in: sampleProjectIds,
-                },
-            },
-        });
-
-        await prisma.project.deleteMany({
-            where: {
-                id: {
-                    in: sampleProjectIds,
-                },
-            },
-        });
+        users.push(user);
     }
-}
 
-async function createSampleResources({ adminUser, regularUser }) {
+    const adminUser = users.find((user) => user.role.toUpperCase() === 'ADMIN');
+    const regularUser = users.find((user) => user.role.toUpperCase() === 'USER');
+
     const alphaProject = await prisma.project.create({
         data: {
-            name: 'Seed Project Alpha',
-            description: 'Seeded sample project owned by seeded users for auth testing.',
+            name: 'Admin Sample Project',
+            description: 'Sample project primarily associated with the admin user.',
         },
     });
 
     const betaProject = await prisma.project.create({
         data: {
-            name: 'Seed Project Beta',
-            description: 'Second seeded project for ownership and role checks.',
+            name: 'User Sample Project',
+            description: 'Sample project primarily associated with the regular user.',
         },
     });
 
@@ -116,7 +49,7 @@ async function createSampleResources({ adminUser, regularUser }) {
         data: [
             { userId: adminUser.id, projectId: alphaProject.id },
             { userId: regularUser.id, projectId: alphaProject.id },
-            { userId: adminUser.id, projectId: betaProject.id },
+            { userId: regularUser.id, projectId: betaProject.id },
         ],
     });
 
@@ -125,17 +58,17 @@ async function createSampleResources({ adminUser, regularUser }) {
             projectId: alphaProject.id,
             creatorId: adminUser.id,
             assigneeId: regularUser.id,
-            description: 'Admin-created task assigned to regular user.',
+            description: 'Admin-created task assigned to the regular user.',
             status: 'in_progress',
         },
     });
 
-    const regularCreatedTask = await prisma.task.create({
+    const userCreatedTask = await prisma.task.create({
         data: {
             projectId: betaProject.id,
             creatorId: regularUser.id,
             assigneeId: adminUser.id,
-            description: 'Regular-user-created task assigned to admin.',
+            description: 'Regular-user-created task assigned to the admin user.',
             status: 'todo',
         },
     });
@@ -145,34 +78,22 @@ async function createSampleResources({ adminUser, regularUser }) {
             {
                 taskId: adminCreatedTask.id,
                 authorId: regularUser.id,
-                content: 'Regular user comment on admin-created task.',
+                content: 'Regular user comment on admin-owned task.',
             },
             {
-                taskId: regularCreatedTask.id,
+                taskId: userCreatedTask.id,
                 authorId: adminUser.id,
-                content: 'Admin comment on regular-user-created task.',
+                content: 'Admin comment on regular user task.',
             },
         ],
     });
 
-    return {
-        projectsCreated: 2,
-        tasksCreated: 2,
-        commentsCreated: 2,
-    };
+    console.log('Seed completed successfully!');
+    console.log('Users seeded:');
+    console.log(' - user6@test.com / password6 (ADMIN)');
+    console.log(' - user5@test.com / password5 (USER)');
+} catch (error) {
+    console.error('Seed failed:', error);
+} finally {
+    await prisma.$disconnect();
 }
-
-async function main() {
-    const users = await upsertKnownUsers();
-    await resetSampleResources();
-    const resourceCounts = await createSampleResources(users);
-}
-
-main()
-    .catch((error) => {
-        console.error('Seed failed:', error);
-        process.exitCode = 1;
-    })
-    .finally(async () => {
-        await prisma.$disconnect();
-    });
