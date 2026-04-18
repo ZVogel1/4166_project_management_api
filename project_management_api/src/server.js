@@ -30,10 +30,6 @@ app.use('/api/projects', projectRoute);
 app.use('/api/tasks', taskRoute);
 app.use('/api/comments', commentRoute);
 
-app.get('/', (req, res) => {
-  res.status(200).json({ message: 'Project Management API is running' });
-});
-
 app.get('/health', (req, res) => {
   res.status(200).json({ ok: true });
 });
