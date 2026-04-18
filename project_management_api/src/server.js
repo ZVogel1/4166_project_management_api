@@ -30,6 +30,10 @@ app.use('/api/projects', projectRoute);
 app.use('/api/tasks', taskRoute);
 app.use('/api/comments', commentRoute);
 
+app.get('/', (req, res) => {
+  res.status(200).json({ message: 'Project Management API is running' });
+});
+
 app.get('/health', (req, res) => {
   res.status(200).json({ ok: true });
 });
@@ -41,10 +45,10 @@ app.use((req, res, next) => {
 });
 
 app.use((err, req, res, next) => {
-  console.log(err.stack);
   if (!err.status) {
     err.status = 500;
     err.message = 'Internal Server Error';
+    console.log(err.stack);
   }
   res.status(err.status).json({ error: err.message });
 });
