@@ -34,19 +34,23 @@ export async function getProjectByIdHandler(req, res) {
 
 export async function createProjectHandler(req, res) {
     const { name, description } = req.body;
-    const newProject = await createProject({ name, description });
+    const newProject = await createProject({
+        name,
+        description,
+        creatorId: req.user.id,
+    });
     res.status(201).json(newProject);
 }
 
 export async function updateProjectHandler(req, res) {
     const id = parseInt(req.params.id);
     const { name, description } = req.body;
-    const updatedProject = await updateProject(id, { name, description });
+    const updatedProject = await updateProject(id, { name, description }, req.user.id);
     res.status(200).json(updatedProject);
 }
 
 export async function deleteProjectHandler(req, res) {
     const id = parseInt(req.params.id);
-    await deleteProject(id);
+    await deleteProject(id, req.user.id);
     res.status(204).send();
 }

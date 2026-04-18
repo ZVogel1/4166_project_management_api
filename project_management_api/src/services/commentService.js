@@ -5,6 +5,7 @@ import {
     update,
     remove,
 } from '../repositories/commentRepo.js';
+import { assertOwnership } from './ownership.js';
 
 export async function getAllComments(options) {
     return getAll(options);
@@ -45,7 +46,10 @@ export async function createComment(resourceData) {
     }
 }
 
-export async function updateComment(id, updatedData) {
+export async function updateComment(id, updatedData, currentUserId) {
+    const comment = await getById(id);
+    assertOwnership(comment, currentUserId, 'authorId', 'Comment');
+
     const updatedComment = await update(id, updatedData);
     if (updatedComment) return updatedComment;
     else {
@@ -55,7 +59,10 @@ export async function updateComment(id, updatedData) {
     }
 }
 
-export async function deleteComment(id) {
+export async function deleteComment(id, currentUserId) {
+    const comment = await getById(id);
+    assertOwnership(comment, currentUserId, 'authorId', 'Comment');
+
     const result = await remove(id);
     if (result) return;
     else {

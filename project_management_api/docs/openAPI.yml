@@ -7,6 +7,7 @@ info:
 
 servers:
   - url: http://localhost:3000/api
+  - url: https://four166-project-management-api.onrender.com/api
 
 paths:
   /auth/signup:
@@ -117,6 +118,8 @@ paths:
     get:
       tags: [Users]
       summary: Get user by ID
+      security:
+        - bearerAuth: []
       parameters:
         - $ref: '#/components/parameters/ResourceId'
       responses:

@@ -5,6 +5,7 @@ import {
     update,
     remove,
 } from '../repositories/projectRepo.js';
+import { assertOwnership } from './ownership.js';
 
 export async function getAllProjects(options) {
     return getAll(options);
@@ -24,7 +25,10 @@ export async function createProject(resourceData) {
     return create(resourceData);
 }
 
-export async function updateProject(id, updatedData) {
+export async function updateProject(id, updatedData, currentUserId) {
+    const project = await getById(id);
+    assertOwnership(project, currentUserId, 'creatorId', 'Project');
+
     const updatedProject = await update(id, updatedData);
     if (updatedProject) return updatedProject;
     else {
@@ -34,7 +38,10 @@ export async function updateProject(id, updatedData) {
     }
 }
 
-export async function deleteProject(id) {
+export async function deleteProject(id, currentUserId) {
+    const project = await getById(id);
+    assertOwnership(project, currentUserId, 'creatorId', 'Project');
+
     const result = await remove(id);
     if (result) return;
     else {

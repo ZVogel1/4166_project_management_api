@@ -49,12 +49,12 @@ export async function createTaskHandler(req, res) {
 export async function updateTaskHandler(req, res) {
     const id = parseInt(req.params.id);
     const { description, status, assigneeId } = req.body;
-    const updatedTask = await updateTask(id, { description, status, assigneeId });
+    const updatedTask = await updateTask(id, { description, status, assigneeId }, req.user.id);
     res.status(200).json(updatedTask);
 }
 
 export async function deleteTaskHandler(req, res) {
     const id = parseInt(req.params.id);
-    await deleteTask(id);
+    await deleteTask(id, req.user.id);
     res.status(204).send();
 }

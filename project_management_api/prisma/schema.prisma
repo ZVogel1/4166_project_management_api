@@ -14,11 +14,16 @@ datasource db {
 
 model Project {
   id Int @id @default(autoincrement())
+  creatorId Int @map("creator_id")
   name String
   description String
   members ProjectMember[]
   tasks Task[]
   createdAt DateTime @default(now())
+
+  creator User @relation("ProjectCreator", fields: [creatorId], references: [id])
+
+  @@index([creatorId])
 
   @@map ("projects")
 }
@@ -61,6 +66,7 @@ model User {
   password String
   role String @default("user") // "user" or "admin"
   comments Comment[]
+  createdProjects Project[] @relation("ProjectCreator")
   projectMembers ProjectMember[]
   assignedTasks Task[] @relation("Assignee")
   createdTasks Task[] @relation("Creator")

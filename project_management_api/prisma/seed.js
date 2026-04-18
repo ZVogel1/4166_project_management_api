@@ -3,9 +3,19 @@ import 'dotenv/config';
 import { prisma } from '../src/prisma/config.js';
 
 try {
-    await prisma.$executeRawUnsafe(
-        'TRUNCATE TABLE comments, tasks, project_members, projects, users RESTART IDENTITY CASCADE;'
-    );
+    const isDeploySeed = process.env.SEED_MODE === 'deploy';
+
+    if (isDeploySeed) {
+        const existingUsers = await prisma.user.count();
+        if (existingUsers > 0) {
+            console.log('Seed skipped: data already exists.');
+            process.exit(0);
+        }
+    } else {
+        await prisma.$executeRawUnsafe(
+            'TRUNCATE TABLE comments, tasks, project_members, projects, users RESTART IDENTITY CASCADE;'
+        );
+    }
 
     const usersData = [
         { email: 'user6@test.com', password: 'password6', role: 'ADMIN' },
@@ -33,6 +43,7 @@ try {
 
     const alphaProject = await prisma.project.create({
         data: {
+            creatorId: adminUser.id,
             name: 'Admin Sample Project',
             description: 'Sample project primarily associated with the admin user.',
         },
@@ -40,6 +51,7 @@ try {
 
     const betaProject = await prisma.project.create({
         data: {
+            creatorId: regularUser.id,
             name: 'User Sample Project',
             description: 'Sample project primarily associated with the regular user.',
         },

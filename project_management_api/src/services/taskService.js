@@ -5,6 +5,7 @@ import {
     update,
     remove,
 } from '../repositories/taskRepo.js';
+import { assertOwnership } from './ownership.js';
 
 export async function getAllTasks(options) {
     return getAll(options);
@@ -48,7 +49,10 @@ export async function createTask(resourceData) {
     }
 }
 
-export async function updateTask(id, updatedData) {
+export async function updateTask(id, updatedData, currentUserId) {
+    const task = await getById(id);
+    assertOwnership(task, currentUserId, 'creatorId', 'Task');
+
     const updatedTask = await update(id, updatedData);
     if (updatedTask) return updatedTask;
     else {
@@ -58,7 +62,10 @@ export async function updateTask(id, updatedData) {
     }
 }
 
-export async function deleteTask(id) {
+export async function deleteTask(id, currentUserId) {
+    const task = await getById(id);
+    assertOwnership(task, currentUserId, 'creatorId', 'Task');
+
     const result = await remove(id);
     if (result) return;
     else {

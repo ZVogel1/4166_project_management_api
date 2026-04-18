@@ -41,12 +41,12 @@ export async function createCommentHandler(req, res) {
 export async function updateCommentHandler(req, res) {
     const id = parseInt(req.params.id);
     const { content } = req.body;
-    const updatedComment = await updateComment(id, { content });
+    const updatedComment = await updateComment(id, { content }, req.user.id);
     res.status(200).json(updatedComment);
 }
 
 export async function deleteCommentHandler(req, res) {
     const id = parseInt(req.params.id);
-    await deleteComment(id);
+    await deleteComment(id, req.user.id);
     res.status(204).send();
 }
