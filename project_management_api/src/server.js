@@ -30,6 +30,10 @@ app.use('/api/projects', projectRoute);
 app.use('/api/tasks', taskRoute);
 app.use('/api/comments', commentRoute);
 
+app.get('/health', (req, res) => {
+  res.status(200).json({ ok: true });
+});
+
 app.use((req, res, next) => {
   const err = new Error('Not Found');
   err.status = 404;
