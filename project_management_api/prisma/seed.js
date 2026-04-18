@@ -5,13 +5,7 @@ import { prisma } from '../src/prisma/config.js';
 try {
     const isDeploySeed = process.env.SEED_MODE === 'deploy';
 
-    if (isDeploySeed) {
-        const existingUsers = await prisma.user.count();
-        if (existingUsers > 0) {
-            console.log('Seed skipped: data already exists.');
-            process.exit(0);
-        }
-    } else {
+    if (!isDeploySeed) {
         await prisma.$executeRawUnsafe(
             'TRUNCATE TABLE comments, tasks, project_members, projects, users RESTART IDENTITY CASCADE;'
         );
@@ -27,13 +21,25 @@ try {
     for (const userData of usersData) {
         const hashedPassword = await bcrypt.hash(userData.password, 10);
 
-        const user = await prisma.user.create({
-            data: {
-                email: userData.email,
-                password: hashedPassword,
-                role: userData.role || 'USER',
-            },
+        const existingUser = await prisma.user.findUnique({
+            where: { email: userData.email },
         });
+
+        const user = existingUser
+            ? await prisma.user.update({
+                where: { email: userData.email },
+                data: {
+                    password: hashedPassword,
+                    role: userData.role || 'USER',
+                },
+            })
+            : await prisma.user.create({
+                data: {
+                    email: userData.email,
+                    password: hashedPassword,
+                    role: userData.role || 'USER',
+                },
+            });
 
         users.push(user);
     }
@@ -41,21 +47,45 @@ try {
     const adminUser = users.find((user) => user.role.toUpperCase() === 'ADMIN');
     const regularUser = users.find((user) => user.role.toUpperCase() === 'USER');
 
-    const alphaProject = await prisma.project.create({
-        data: {
-            creatorId: adminUser.id,
-            name: 'Admin Sample Project',
-            description: 'Sample project primarily associated with the admin user.',
-        },
+    const alphaExisting = await prisma.project.findFirst({
+        where: { name: 'Admin Sample Project' },
     });
 
-    const betaProject = await prisma.project.create({
-        data: {
-            creatorId: regularUser.id,
-            name: 'User Sample Project',
-            description: 'Sample project primarily associated with the regular user.',
-        },
+    const alphaProject = alphaExisting
+        ? await prisma.project.update({
+            where: { id: alphaExisting.id },
+            data: {
+                creatorId: adminUser.id,
+                description: 'Sample project primarily associated with the admin user.',
+            },
+        })
+        : await prisma.project.create({
+            data: {
+                creatorId: adminUser.id,
+                name: 'Admin Sample Project',
+                description: 'Sample project primarily associated with the admin user.',
+            },
+        });
+
+    const betaExisting = await prisma.project.findFirst({
+        where: { name: 'User Sample Project' },
     });
+
+    const betaProject = betaExisting
+        ? await prisma.project.update({
+            where: { id: betaExisting.id },
+            data: {
+                creatorId: regularUser.id,
+                description: 'Sample project primarily associated with the regular user.',
+            },
+        })
+        : await prisma.project.create({
+            data: {
+                creatorId: regularUser.id,
+                name: 'User Sample Project',
+                description: 'Sample project primarily associated with the regular user.',
+            },
+        });
 
     await prisma.projectMember.createMany({
         data: [
@@ -63,27 +93,56 @@ try {
             { userId: regularUser.id, projectId: alphaProject.id },
             { userId: regularUser.id, projectId: betaProject.id },
         ],
+        skipDuplicates: true,
     });
 
-    const adminCreatedTask = await prisma.task.create({
-        data: {
-            projectId: alphaProject.id,
-            creatorId: adminUser.id,
-            assigneeId: regularUser.id,
-            description: 'Admin-created task assigned to the regular user.',
-            status: 'in_progress',
-        },
+    const adminTaskExisting = await prisma.task.findFirst({
+        where: { description: 'Admin-created task assigned to the regular user.' },
     });
 
-    const userCreatedTask = await prisma.task.create({
-        data: {
-            projectId: betaProject.id,
-            creatorId: regularUser.id,
-            assigneeId: adminUser.id,
-            description: 'Regular-user-created task assigned to the admin user.',
-            status: 'todo',
-        },
+    const adminCreatedTask = adminTaskExisting
+        ? await prisma.task.update({
+            where: { id: adminTaskExisting.id },
+            data: {
+                projectId: alphaProject.id,
+                creatorId: adminUser.id,
+                assigneeId: regularUser.id,
+                status: 'in_progress',
+            },
+        })
+        : await prisma.task.create({
+            data: {
+                projectId: alphaProject.id,
+                creatorId: adminUser.id,
+                assigneeId: regularUser.id,
+                description: 'Admin-created task assigned to the regular user.',
+                status: 'in_progress',
+            },
+        });
+
+    const userTaskExisting = await prisma.task.findFirst({
+        where: { description: 'Regular-user-created task assigned to the admin user.' },
     });
+
+    const userCreatedTask = userTaskExisting
+        ? await prisma.task.update({
+            where: { id: userTaskExisting.id },
+            data: {
+                projectId: betaProject.id,
+                creatorId: regularUser.id,
+                assigneeId: adminUser.id,
+                status: 'todo',
+            },
+        })
+        : await prisma.task.create({
+            data: {
+                projectId: betaProject.id,
+                creatorId: regularUser.id,
+                assigneeId: adminUser.id,
+                description: 'Regular-user-created task assigned to the admin user.',
+                status: 'todo',
+            },
+        });
 
     await prisma.comment.createMany({
         data: [
@@ -98,6 +157,7 @@ try {
                 content: 'Admin comment on regular user task.',
             },
         ],
+        skipDuplicates: true,
     });
 
     console.log('Seed completed successfully!');
