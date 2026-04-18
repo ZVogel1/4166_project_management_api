@@ -21,7 +21,31 @@ export async function getTaskById(id) {
 }
 
 export async function createTask(resourceData) {
-    return create(resourceData);
+    try {
+        return await create(resourceData);
+    } catch (error) {
+        if (error.code === 'P2003') {
+            const fieldName = error.meta?.field_name || '';
+            const constraintName = error.meta?.constraint || '';
+
+            const relationHint = `${fieldName} ${constraintName}`.toLowerCase();
+
+            const clientError = new Error('Invalid related resource reference');
+            clientError.status = 400;
+
+            if (relationHint.includes('project')) {
+                clientError.message = `Project ${resourceData.projectId} not found`;
+            } else if (relationHint.includes('assignee')) {
+                clientError.message = `Assignee ${resourceData.assigneeId} not found`;
+            } else if (relationHint.includes('creator')) {
+                clientError.message = `Creator ${resourceData.creatorId} not found`;
+            }
+
+            throw clientError;
+        }
+
+        throw error;
+    }
 }
 
 export async function updateTask(id, updatedData) {

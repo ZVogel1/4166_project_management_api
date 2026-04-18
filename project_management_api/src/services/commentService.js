@@ -21,7 +21,28 @@ export async function getCommentById(id) {
 }
 
 export async function createComment(resourceData) {
-    return create(resourceData);
+    try {
+        return await create(resourceData);
+    } catch (error) {
+        if (error.code === 'P2003') {
+            const fieldName = error.meta?.field_name || '';
+            const constraintName = error.meta?.constraint || '';
+            const relationHint = `${fieldName} ${constraintName}`.toLowerCase();
+
+            const clientError = new Error('Invalid related resource reference');
+            clientError.status = 400;
+
+            if (relationHint.includes('task')) {
+                clientError.message = `Task ${resourceData.taskId} not found`;
+            } else if (relationHint.includes('author')) {
+                clientError.message = `Author ${resourceData.authorId} not found`;
+            }
+
+            throw clientError;
+        }
+
+        throw error;
+    }
 }
 
 export async function updateComment(id, updatedData) {

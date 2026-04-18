@@ -7,7 +7,8 @@ export const validateCreateComment = [
         .withMessage('Task ID is required')
         .bail()
         .isInt({ min: 1 })
-        .withMessage('Task ID must be a positive integer'),
+        .withMessage('Task ID must be a positive integer')
+        .toInt(),
 
     body('content')
         .trim()
