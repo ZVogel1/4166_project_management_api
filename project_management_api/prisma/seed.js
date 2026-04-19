@@ -3,13 +3,14 @@ import 'dotenv/config';
 import { prisma } from '../src/prisma/config.js';
 
 try {
-    const isDeploySeed = process.env.SEED_MODE === 'deploy';
-    console.log(`Seed mode: ${isDeploySeed ? 'deploy' : 'local-dev'}`);
+    const isDev = !process.env.NODE_ENV || process.env.NODE_ENV === 'development';
+    console.log(`Seed mode: ${isDev ? 'development' : 'production'}`);
 
-    if (!isDeploySeed) {
+    if (isDev) {
         await prisma.$executeRawUnsafe(
             'TRUNCATE TABLE comments, tasks, project_members, projects, users RESTART IDENTITY CASCADE;'
         );
+        console.log('Development: tables truncated.');
     }
 
     const usersData = [
