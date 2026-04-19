@@ -4,6 +4,7 @@ import { prisma } from '../src/prisma/config.js';
 
 try {
     const isDeploySeed = process.env.SEED_MODE === 'deploy';
+    console.log(`Seed mode: ${isDeploySeed ? 'deploy' : 'local-dev'}`);
 
     if (!isDeploySeed) {
         await prisma.$executeRawUnsafe(
@@ -166,6 +167,7 @@ try {
     console.log(' - user5@test.com / password5 (USER)');
 } catch (error) {
     console.error('Seed failed:', error);
+    process.exitCode = 1;
 } finally {
     await prisma.$disconnect();
 }
