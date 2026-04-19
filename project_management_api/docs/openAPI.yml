@@ -117,8 +117,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/User'
               example:
-                id: 3
-                email: newuser@test.com
+                id: 2
+                email: user5@test.com
                 role: USER
         '401':
           $ref: '#/components/responses/Unauthorized'
@@ -172,7 +172,7 @@ paths:
                 $ref: '#/components/schemas/User'
               example:
                 id: 2
-                email: updateduser@test.com
+                email: user6@test.com
                 role: ADMIN
         '401':
           $ref: '#/components/responses/Unauthorized'
@@ -248,10 +248,10 @@ paths:
               schema:
                 $ref: '#/components/schemas/Project'
               example:
-                id: 3
+                id: 2
                 creatorId: 2
-                name: My Project
-                description: A project for tracking work.
+                name: User Sample Project
+                description: Sample project primarily associated with the regular user.
                 createdAt: '2026-04-19T00:00:00.000Z'
         '400':
           $ref: '#/components/responses/InvalidProjectInput'
@@ -306,8 +306,8 @@ paths:
               example:
                 id: 1
                 creatorId: 1
-                name: Updated Project Name
-                description: Updated project description.
+                name: Admin Sample Project
+                description: Sample project primarily associated with the admin user.
                 createdAt: '2026-04-19T00:00:00.000Z'
         '400':
           $ref: '#/components/responses/InvalidProjectInput'
@@ -387,12 +387,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/Task'
               example:
-                id: 3
+                id: 2
                 projectId: 1
                 assigneeId: 2
-                creatorId: 2
-                description: Review project requirements.
-                status: todo
+                creatorId: 1
+                description: Admin-created task assigned to the regular user.
+                status: in_progress
         '400':
           $ref: '#/components/responses/InvalidTaskInput'
         '401':
@@ -447,9 +447,9 @@ paths:
               example:
                 id: 1
                 projectId: 1
-                assigneeId: 1
+                assigneeId: 2
                 creatorId: 1
-                description: Review project requirements again.
+                description: Admin-created task assigned to the regular user.
                 status: in_progress
         '400':
           $ref: '#/components/responses/InvalidTaskInput'
@@ -525,10 +525,10 @@ paths:
               schema:
                 $ref: '#/components/schemas/Comment'
               example:
-                id: 3
+                id: 2
                 taskId: 1
                 authorId: 2
-                content: This task looks good.
+                content: Regular user comment on admin-owned task.
                 createdAt: '2026-04-19T00:00:00.000Z'
         '400':
           $ref: '#/components/responses/InvalidCommentInput'
@@ -857,8 +857,8 @@ components:
         role:
           type: string
       example:
-        email: newuser@test.com
-        password: password123
+        email: user5@test.com
+        password: password5
         role: USER
 
     UpdateUserRequest:
@@ -873,8 +873,8 @@ components:
         role:
           type: string
       example:
-        email: updateduser@test.com
-        password: newpassword123
+        email: user6@test.com
+        password: password6
         role: ADMIN
 
     CreateProjectRequest:
@@ -890,8 +890,8 @@ components:
           type: string
           maxLength: 500
       example:
-        name: My Project
-        description: A project for tracking work.
+        name: User Sample Project
+        description: Sample project primarily associated with the regular user.
 
     UpdateProjectRequest:
       type: object
@@ -906,8 +906,8 @@ components:
           type: string
           maxLength: 500
       example:
-        name: Updated Project Name
-        description: Updated project description.
+        name: Admin Sample Project
+        description: Sample project primarily associated with the admin user.
 
     CreateTaskRequest:
       type: object
@@ -930,8 +930,8 @@ components:
       example:
         projectId: 1
         assigneeId: 2
-        description: Review project requirements.
-        status: todo
+        description: Admin-created task assigned to the regular user.
+        status: in_progress
 
     UpdateTaskRequest:
       type: object
@@ -948,8 +948,8 @@ components:
           type: string
           enum: [todo, in_progress, done]
       example:
-        assigneeId: 1
-        description: Review project requirements again.
+        assigneeId: 2
+        description: Admin-created task assigned to the regular user.
         status: in_progress
 
     CreateCommentRequest:
@@ -966,7 +966,7 @@ components:
           maxLength: 1000
       example:
         taskId: 1
-        content: This task looks good.
+        content: Regular user comment on admin-owned task.
 
     UpdateCommentRequest:
       type: object

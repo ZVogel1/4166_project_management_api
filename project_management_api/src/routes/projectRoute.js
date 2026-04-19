@@ -3,10 +3,11 @@ import { getAllProjectsHandler, getProjectByIdHandler, createProjectHandler, upd
 import { authenticate } from '../middleware/authenticate.js';
 import { validateProject } from '../middleware/projectValidators.js';
 import { validateResourceId } from '../middleware/resourceIdValidator.js';
+import { validateListQuery } from '../middleware/listQueryValidator.js';
 
 const router = express.Router();
 
-router.get('/', authenticate, getAllProjectsHandler);
+router.get('/', authenticate, validateListQuery(['id', 'creatorId', 'name', 'description', 'createdAt']), getAllProjectsHandler);
 router.get('/:id', authenticate, validateResourceId, getProjectByIdHandler);
 router.post('/', authenticate, validateProject, createProjectHandler);
 router.put('/:id', authenticate, validateResourceId, validateProject, updateProjectHandler);
