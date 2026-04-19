@@ -28,6 +28,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/User'
+              example:
+                id: 2
+                email: user5@test.com
+                role: USER
         '400':
           $ref: '#/components/responses/InvalidUserInput'
 
@@ -53,16 +57,14 @@ paths:
                 properties:
                   accessToken:
                     type: string
+              example:
+                accessToken: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.example.token
         '400':
           $ref: '#/components/responses/InvalidUserInput'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '429':
-          description: Too many login attempts
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
+          $ref: '#/components/responses/TooManyRequests'
 
   /users:
     get:
@@ -85,6 +87,13 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/User'
+              example:
+                - id: 1
+                  email: user6@test.com
+                  role: ADMIN
+                - id: 2
+                  email: user5@test.com
+                  role: USER
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
@@ -107,6 +116,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/User'
+              example:
+                id: 3
+                email: newuser@test.com
+                role: USER
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
@@ -129,6 +142,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/User'
+              example:
+                id: 2
+                email: user5@test.com
+                role: USER
         '401':
           $ref: '#/components/responses/Unauthorized'
         '404':
@@ -153,6 +170,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/User'
+              example:
+                id: 2
+                email: updateduser@test.com
+                role: ADMIN
         '401':
           $ref: '#/components/responses/Unauthorized'
         '404':
@@ -195,6 +216,17 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Project'
+              example:
+                - id: 1
+                  creatorId: 1
+                  name: Admin Sample Project
+                  description: Sample project primarily associated with the admin user.
+                  createdAt: '2026-04-19T00:00:00.000Z'
+                - id: 2
+                  creatorId: 2
+                  name: User Sample Project
+                  description: Sample project primarily associated with the regular user.
+                  createdAt: '2026-04-19T00:00:00.000Z'
         '401':
           $ref: '#/components/responses/Unauthorized'
     post:
@@ -215,6 +247,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Project'
+              example:
+                id: 3
+                creatorId: 2
+                name: My Project
+                description: A project for tracking work.
+                createdAt: '2026-04-19T00:00:00.000Z'
         '400':
           $ref: '#/components/responses/InvalidProjectInput'
         '401':
@@ -235,6 +273,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Project'
+              example:
+                id: 1
+                creatorId: 1
+                name: Admin Sample Project
+                description: Sample project primarily associated with the admin user.
+                createdAt: '2026-04-19T00:00:00.000Z'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '404':
@@ -259,6 +303,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Project'
+              example:
+                id: 1
+                creatorId: 1
+                name: Updated Project Name
+                description: Updated project description.
+                createdAt: '2026-04-19T00:00:00.000Z'
         '400':
           $ref: '#/components/responses/InvalidProjectInput'
         '401':
@@ -267,7 +317,7 @@ paths:
           $ref: '#/components/responses/NotFound'
     delete:
       tags: [Projects]
-      summary: Delete project by ID (admin only)
+      summary: Delete project by ID (owner only)
       security:
         - bearerAuth: []
       parameters:
@@ -303,6 +353,19 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Task'
+              example:
+                - id: 1
+                  projectId: 1
+                  assigneeId: 2
+                  creatorId: 1
+                  description: Admin-created task assigned to the regular user.
+                  status: in_progress
+                - id: 2
+                  projectId: 2
+                  assigneeId: 1
+                  creatorId: 2
+                  description: Regular-user-created task assigned to the admin user.
+                  status: todo
         '401':
           $ref: '#/components/responses/Unauthorized'
     post:
@@ -323,6 +386,13 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Task'
+              example:
+                id: 3
+                projectId: 1
+                assigneeId: 2
+                creatorId: 2
+                description: Review project requirements.
+                status: todo
         '400':
           $ref: '#/components/responses/InvalidTaskInput'
         '401':
@@ -343,6 +413,13 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Task'
+              example:
+                id: 1
+                projectId: 1
+                assigneeId: 2
+                creatorId: 1
+                description: Admin-created task assigned to the regular user.
+                status: in_progress
         '401':
           $ref: '#/components/responses/Unauthorized'
         '404':
@@ -367,6 +444,13 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Task'
+              example:
+                id: 1
+                projectId: 1
+                assigneeId: 1
+                creatorId: 1
+                description: Review project requirements again.
+                status: in_progress
         '400':
           $ref: '#/components/responses/InvalidTaskInput'
         '401':
@@ -409,6 +493,17 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Comment'
+              example:
+                - id: 1
+                  taskId: 1
+                  authorId: 2
+                  content: Regular user comment on admin-owned task.
+                  createdAt: '2026-04-19T00:00:00.000Z'
+                - id: 2
+                  taskId: 2
+                  authorId: 1
+                  content: Admin comment on regular user task.
+                  createdAt: '2026-04-19T00:00:00.000Z'
         '401':
           $ref: '#/components/responses/Unauthorized'
     post:
@@ -429,6 +524,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Comment'
+              example:
+                id: 3
+                taskId: 1
+                authorId: 2
+                content: This task looks good.
+                createdAt: '2026-04-19T00:00:00.000Z'
         '400':
           $ref: '#/components/responses/InvalidCommentInput'
         '401':
@@ -449,6 +550,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Comment'
+              example:
+                id: 1
+                taskId: 1
+                authorId: 2
+                content: Regular user comment on admin-owned task.
+                createdAt: '2026-04-19T00:00:00.000Z'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '404':
@@ -473,6 +580,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Comment'
+              example:
+                id: 1
+                taskId: 1
+                authorId: 2
+                content: Updated comment text.
+                createdAt: '2026-04-19T00:00:00.000Z'
         '400':
           $ref: '#/components/responses/InvalidCommentInput'
         '401':
@@ -574,24 +687,47 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/ValidationErrorResponse'
+          example:
+            errors:
+              - Email is not valid
+              - Password must contain at least 8 characters and at most 64 characters
     InvalidProjectInput:
       description: Project validation failed
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/ValidationErrorResponse'
+          example:
+            errors:
+              - Project name must be between 3 and 100 characters
     InvalidTaskInput:
       description: Task validation failed
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/ValidationErrorResponse'
+          example:
+            errors:
+              - Project ID must be a positive integer
+              - Assignee ID must be a positive integer
     InvalidCommentInput:
       description: Comment validation failed
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/ValidationErrorResponse'
+          example:
+            errors:
+              - Task ID must be a positive integer
+              - Comment content must be between 1 and 1000 characters
+    TooManyRequests:
+      description: Too many login attempts
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error: Too many login requests, please try again later.
 
   schemas:
     User:
@@ -607,6 +743,10 @@ components:
           type: string
           description: Role value from database
           example: USER
+      example:
+        id: 1
+        email: user5@test.com
+        role: USER
 
     Project:
       type: object
@@ -621,6 +761,12 @@ components:
         createdAt:
           type: string
           format: date-time
+      example:
+        id: 1
+        creatorId: 1
+        name: User Sample Project
+        description: Sample project primarily associated with the regular user.
+        createdAt: '2026-04-19T00:00:00.000Z'
 
     Task:
       type: object
@@ -639,6 +785,13 @@ components:
         status:
           type: string
           enum: [todo, in_progress, done]
+      example:
+        id: 1
+        projectId: 1
+        assigneeId: 2
+        creatorId: 1
+        description: Admin-created task assigned to the regular user.
+        status: in_progress
 
     Comment:
       type: object
@@ -655,6 +808,12 @@ components:
         createdAt:
           type: string
           format: date-time
+      example:
+        id: 1
+        taskId: 1
+        authorId: 2
+        content: Regular user comment on admin-owned task.
+        createdAt: '2026-04-19T00:00:00.000Z'
 
     AuthCredentials:
       type: object
@@ -666,6 +825,9 @@ components:
           format: email
         password:
           type: string
+      example:
+        email: user5@test.com
+        password: password5
 
     SignUpRequest:
       allOf:
@@ -677,6 +839,10 @@ components:
               type: string
               enum: [USER, ADMIN]
               description: Optional. Defaults to USER.
+          example:
+            email: user5@test.com
+            password: password5
+            role: USER
 
     CreateUserRequest:
       type: object
@@ -690,6 +856,10 @@ components:
           type: string
         role:
           type: string
+      example:
+        email: newuser@test.com
+        password: password123
+        role: USER
 
     UpdateUserRequest:
       type: object
@@ -702,6 +872,10 @@ components:
           type: string
         role:
           type: string
+      example:
+        email: updateduser@test.com
+        password: newpassword123
+        role: ADMIN
 
     CreateProjectRequest:
       type: object
@@ -715,6 +889,9 @@ components:
         description:
           type: string
           maxLength: 500
+      example:
+        name: My Project
+        description: A project for tracking work.
 
     UpdateProjectRequest:
       type: object
@@ -728,6 +905,9 @@ components:
         description:
           type: string
           maxLength: 500
+      example:
+        name: Updated Project Name
+        description: Updated project description.
 
     CreateTaskRequest:
       type: object
@@ -747,6 +927,11 @@ components:
         status:
           type: string
           enum: [todo, in_progress, done]
+      example:
+        projectId: 1
+        assigneeId: 2
+        description: Review project requirements.
+        status: todo
 
     UpdateTaskRequest:
       type: object
@@ -762,6 +947,10 @@ components:
         status:
           type: string
           enum: [todo, in_progress, done]
+      example:
+        assigneeId: 1
+        description: Review project requirements again.
+        status: in_progress
 
     CreateCommentRequest:
       type: object
@@ -775,6 +964,9 @@ components:
           type: string
           minLength: 1
           maxLength: 1000
+      example:
+        taskId: 1
+        content: This task looks good.
 
     UpdateCommentRequest:
       type: object
@@ -785,6 +977,8 @@ components:
           type: string
           minLength: 1
           maxLength: 1000
+      example:
+        content: Updated comment text.
 
     ErrorResponse:
       type: object
@@ -793,6 +987,8 @@ components:
       properties:
         error:
           type: string
+      example:
+        error: Internal Server Error
 
     ValidationErrorResponse:
       type: object
@@ -803,6 +999,9 @@ components:
           type: array
           items:
             type: string
+      example:
+        errors:
+          - Validation failed
 
 tags:
   - name: Auth

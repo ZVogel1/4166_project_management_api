@@ -7,14 +7,16 @@ export const validateCreateTask = [
         .withMessage('Project ID is required')
         .bail()
         .isInt({ min: 1 })
-        .withMessage('Project ID must be a positive integer'),
+        .withMessage('Project ID must be a positive integer')
+        .toInt(),
 
     body('assigneeId')
         .exists({ values: 'falsy' })
         .withMessage('Assignee ID is required')
         .bail()
         .isInt({ min: 1 })
-        .withMessage('Assignee ID must be a positive integer'),
+        .withMessage('Assignee ID must be a positive integer')
+        .toInt(),
 
     body('description')
         .trim()
@@ -36,7 +38,8 @@ export const validateUpdateTask = [
     body('assigneeId')
         .optional()
         .isInt({ min: 1 })
-        .withMessage('Assignee ID must be a positive integer'),
+        .withMessage('Assignee ID must be a positive integer')
+        .toInt(),
 
     body('description')
         .optional()
