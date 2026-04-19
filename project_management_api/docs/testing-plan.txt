@@ -1,0 +1,580 @@
+AUTH
+Endpoint: POST /api/auth/signup
+Access Control: Public
+
+Success Case:
+Enter body:
+  	{
+    "email": "user5@test.com",
+    "password": "password5",
+    "role": "USER"
+  }
+Click Try it out.
+Click Execute.
+Expect 201 Created.
+
+400 Bad Request:
+Use invalid email or short password.
+Click Try it out.
+Click Execute.
+Expect 400 Bad Request.
+
+Endpoint: POST /api/auth/login
+Access Control: Public (rate-limited)
+
+Success Case:
+Enter body:
+  {
+    "email": "user5@test.com",
+    "password": "password5"
+  }
+Click Try it out.
+Click Execute.
+Expect 200 OK with accessToken.
+
+401 Unauthorized:
+Use wrong password.
+Click Try it out.
+Click Execute.
+Expect 401 Unauthorized.
+
+429 Too Many Requests:
+Submit invalid login 4+ times in one minute.
+Click Try it out.
+Click Execute.
+Expect 429 Too Many Requests.
+
+USERS
+Endpoint: GET /api/users
+Access Control: Admin only
+Setup: Authorize with ADMIN_TOKEN.
+
+Success Case:
+Optional query: sortBy=email&order=asc&offset=0&limit=5
+Click Try it out.
+Click Execute.
+Expect 200 OK with user array.
+
+403 Forbidden:
+Authorize with USER_TOKEN.
+Click Try it out.
+Click Execute.
+Expect 403 Forbidden.
+
+401 Unauthorized:
+Remove token.
+Click Try it out.
+Click Execute.
+Expect 401 Unauthorized.
+
+400 Bad Request:
+Use query sortBy=badField.
+Click Try it out.
+Click Execute.
+Expect 400 Bad Request.
+
+Endpoint: GET /api/users/{id}
+Access Control: Authenticated users
+
+Success Case:
+Use id=1 or id=2.
+Click Try it out.
+Click Execute.
+Expect 200 OK.
+
+400 Bad Request:
+Use id=abc.
+Click Try it out.
+Click Execute.
+Expect 400 Bad Request.
+
+404 Not Found:
+Use id=9999.
+Click Try it out.
+Click Execute.
+Expect 404 Not Found.
+
+401 Unauthorized:
+Remove token.
+Click Try it out.
+Click Execute.
+Expect 401 Unauthorized.
+
+Endpoint: POST /api/users
+Access Control: Admin only
+Setup: Authorize with ADMIN_TOKEN.
+
+Success Case:
+Body:
+  {
+    "email": "user5@test.com",
+    "password": "password5",
+    "role": "USER"
+  }
+Click Try it out.
+Click Execute.
+Expect 201 Created.
+
+403 Forbidden:
+Use USER_TOKEN.
+Click Try it out.
+Click Execute.
+Expect 403 Forbidden.
+
+401 Unauthorized:
+Remove token.
+Click Try it out.
+Click Execute.
+Expect 401 Unauthorized.
+
+Endpoint: PUT /api/users/{id}
+Access Control: Authenticated users
+
+Success Case:
+Use id=2.
+Body:
+  {
+    "email": "user6@test.com",
+    "role": "ADMIN"
+  }
+Click Try it out.
+Click Execute.
+Expect 200 OK.
+
+400 Bad Request:
+Use id=abc.
+Click Try it out.
+Click Execute.
+Expect 400 Bad Request.
+
+404 Not Found:
+Use id=9999.
+Click Try it out.
+Click Execute.
+Expect 404 Not Found.
+
+401 Unauthorized:
+Remove token.
+Click Try it out.
+Click Execute.
+Expect 401 Unauthorized.
+
+Endpoint: DELETE /api/users/{id}
+Access Control: Admin only
+
+Success Case:
+Use an existing test user ID.
+Click Try it out.
+Click Execute.
+Expect 204 No Content.
+
+403 Forbidden:
+Use USER_TOKEN.
+ Click Try it out.
+ Click Execute.
+Expect 403 Forbidden.
+
+400 Bad Request:
+Use id=abc.
+Click Try it out.
+Click Execute.
+Expect 400 Bad Request.
+
+404 Not Found:
+Use id=9999.
+Click Try it out.
+Click Execute.
+Expect 404 Not Found.
+
+PROJECTS
+Endpoint: GET /api/projects
+Access Control: Authenticated users
+
+Success Case:
+ Optional query: sortBy=createdAt&order=desc&offset=0&limit=5
+Click Try it out.
+ Click Execute.
+ Expect 200 OK with project array.
+
+400 Bad Request:
+ Use query order=up.
+ Click Try it out.
+ Click Execute.
+ Expect 400 Bad Request.
+
+401 Unauthorized:
+ Remove token.
+Click Try it out.
+Click Execute.
+Expect 401 Unauthorized.
+
+Endpoint: GET /api/projects/{id}
+Access Control: Authenticated users
+
+Success Case:
+ Use id=1.
+ Click Try it out.
+ Click Execute.
+ Expect 200 OK.
+
+400 Bad Request:
+ Use id=abc.
+ Click Try it out.
+ Click Execute.
+ Expect 400 Bad Request.
+
+404 Not Found:
+ Use id=9999.
+ Click Try it out.
+ Click Execute.
+ Expect 404 Not Found.
+
+Endpoint: POST /api/projects
+Access Control: Authenticated users
+
+Success Case:
+ Body:
+  {
+    "name": "User Sample Project",
+    "description": "Sample project primarily associated with the regular user."
+  }
+Click Try it out.
+Click Execute.
+Expect 201 Created.
+
+400 Bad Request:
+ Remove name.
+ Click Try it out.
+ Click Execute.
+ Expect 400 Bad Request.
+
+401 Unauthorized:
+ Remove token.
+ Click Try it out.
+ Click Execute.
+ Expect 401 Unauthorized.
+
+Endpoint: PUT /api/projects/{id}
+Access Control: Owner only
+
+Success Case:
+Use ADMIN_TOKEN for id=1 OR USER_TOKEN for id=2.
+ Valid name/description body.
+ Click Try it out.
+ Click Execute.
+ Expect 200 OK.
+
+403 Forbidden:
+ Use USER_TOKEN for id=1.
+ Click Try it out.
+ Click Execute.
+ Expect 403 Forbidden.
+
+400 Bad Request:
+Use id=abc.
+ Click Try it out.
+ Click Execute.
+ Expect 400 Bad Request.
+
+404 Not Found:
+ Use id=9999.
+ Click Try it out.
+ Click Execute.
+ Expect 404 Not Found.
+
+Endpoint: DELETE /api/projects/{id}
+Access Control: Owner only
+
+Success Case:
+ Use ADMIN_TOKEN for id=1 OR USER_TOKEN for id=2.
+ Click Try it out.
+ Click Execute.
+ Expect 204 No Content.
+
+403 Forbidden:
+ Use USER_TOKEN for id=1.
+ Click Try it out.
+ Click Execute.
+ Expect 403 Forbidden.
+
+400 Bad Request:
+ Use id=abc.
+ Click Try it out.
+ Click Execute.
+ Expect 400 Bad Request.
+
+404 Not Found:
+ Use id=9999.
+ Click Try it out.
+ Click Execute.
+ Expect 404 Not Found.
+
+
+TASKS
+Endpoint: GET /api/tasks
+Access Control: Authenticated users
+
+Success Case:
+ Optional query: sortBy=status&order=asc&offset=0&limit=5
+ Click Try it out.
+ Click Execute.
+ Expect 200 OK with task array.
+
+400 Bad Request:
+ Use query limit=0.
+ Click Try it out.
+ Click Execute.
+ Expect 400 Bad Request.
+ 
+401 Unauthorized:
+ Remove token.
+ Click Try it out.
+ Click Execute.
+ Expect 401 Unauthorized.
+
+Endpoint: GET /api/tasks/{id}
+Access Control: Authenticated users
+
+Success Case:
+ Use id=1.
+ Click Try it out.
+ Click Execute.
+ Expect 200 OK.
+
+400 Bad Request:
+ Use id=abc.
+ Click Try it out.
+ Click Execute.
+ Expect 400 Bad Request.
+
+404 Not Found:
+ Use id=9999.
+ Click Try it out.
+ Click Execute.
+ Expect 404 Not Found.
+
+Endpoint: POST /api/tasks
+Access Control: Authenticated users
+
+Success Case:
+Body:
+  {
+    "projectId": 1,
+    "assigneeId": 2,
+    "description": "Admin-created task assigned to the regular user.",
+    "status": "in_progress"
+  }
+Click Try it out.
+ Click Execute. 
+Expect 201 Created.
+
+400 Bad Request (validation):
+ Use assigneeId=0.
+ Click Try it out.
+Click Execute.
+ Expect 400 Bad Request.
+
+400 Bad Request (FK):
+Use projectId=9999.
+ Click Try it out.
+ Click Execute.
+Expect 400 Bad Request.
+
+401 Unauthorized:
+ Remove token.
+ Click Try it out.
+ Click Execute.
+ Expect 401 Unauthorized.
+
+Endpoint: PUT /api/tasks/{id}
+Access Control: Owner only
+
+Success Case:
+ Use ADMIN_TOKEN for id=1 OR USER_TOKEN for id=2.
+Body:
+  {
+    "assigneeId": 2,
+    "description": "Admin-created task assigned to the regular user.",
+    "status": "in_progress"
+  }
+  Click Try it out.
+  Click Execute.
+  Expect 200 OK.
+
+403 Forbidden:
+ Use USER_TOKEN for id=1.
+ Click Try it out.
+ Click Execute.
+ Expect 403 Forbidden.
+
+400 Bad Request:
+ Use id=abc.
+ Click Try it out.
+ Click Execute.
+ Expect 400 Bad Request.
+
+404 Not Found:
+ Use id=9999.
+ Click Try it out.
+ Click Execute.
+ Expect 404 Not Found.
+
+Endpoint: DELETE /api/tasks/{id}
+Access Control: Owner only
+
+Success Case:
+ Use ADMIN_TOKEN for id=1 OR USER_TOKEN for id=2.
+ Click Try it out.
+ Click Execute.
+ Expect 204 No Content.
+
+403 Forbidden:
+ Use USER_TOKEN for id=1.
+ Click Try it out.
+ Click Execute.
+ Expect 403 Forbidden.
+
+400 Bad Request:
+ Use id=abc.
+ Click Try it out.
+ Click Execute.
+ Expect 400 Bad Request.
+
+404 Not Found:
+ Use id=9999.
+ Click Try it out.
+ Click Execute.
+ Expect 404 Not Found.
+
+
+COMMENTS
+Endpoint: GET /api/comments
+Access Control: Authenticated users
+
+Success Case:
+Optional query: sortBy=createdAt&order=desc&offset=0&limit=5
+  Click Try it out.
+ Click Execute.
+ Expect 200 OK with comment array.
+
+400 Bad Request:
+ Use query offset=-1.
+ Click Try it out.
+ Click Execute.
+-   Expect 400 Bad Request.
+
+401 Unauthorized:
+ Remove token.
+ Click Try it out.
+ Click Execute.
+ Expect 401 Unauthorized.
+
+Endpoint: GET /api/comments/{id}
+Access Control: Authenticated users
+
+Success Case:
+ Use id=1.
+ Click Try it out.
+ Click Execute.
+ Expect 200 OK.
+
+400 Bad Request:
+ Use id=abc.
+ Click Try it out.
+ Click Execute.
+ Expect 400 Bad Request.
+
+404 Not Found:
+ Use id=9999.
+ Click Try it out.
+ Click Execute.
+ Expect 404 Not Found.
+
+Endpoint: POST /api/comments
+Access Control: Authenticated users
+
+Success Case:
+Body:
+  {
+    "taskId": 1,
+    "content": "Regular user comment on admin-owned task."
+  }
+ Click Try it out.
+ Click Execute.
+ Expect 201 Created.
+
+400 Bad Request (validation):
+ Use taskId="abc".
+ Click Try it out.
+ Click Execute.
+ Expect 400 Bad Request.
+
+400 Bad Request (FK):
+ Use taskId=9999.
+ Click Try it out.
+ Click Execute.
+ Expect 400 Bad Request.
+
+401 Unauthorized:
+ Remove token.
+ Click Try it out.
+ Click Execute.
+ Expect 401 Unauthorized.
+
+Endpoint: PUT /api/comments/{id}
+Access Control: Owner only
+
+Success Case:
+ Use USER_TOKEN for id=1 OR ADMIN_TOKEN for id=2.
+ Body:
+  {
+    "content": "Updated comment text."
+  }
+ Click Try it out.
+ Click Execute.
+  Expect 200 OK.
+
+403 Forbidden:
+ Use ADMIN_TOKEN for id=1.
+ Click Try it out.
+ Click Execute.
+ Expect 403 Forbidden.
+
+400 Bad Request:
+ Use id=abc.
+ Click Try it out.
+ Click Execute.
+  Expect 400 Bad Request.
+
+404 Not Found:
+ Use id=9999.
+ Click Try it out.
+ Click Execute.
+ Expect 404 Not Found.
+
+Endpoint: DELETE /api/comments/{id}
+Access Control: Owner only
+
+Success Case:
+ Use USER_TOKEN for id=1 OR ADMIN_TOKEN for id=2.
+ Click Try it out.
+ Click Execute.
+ Expect 204 No Content.
+
+403 Forbidden:
+ Use ADMIN_TOKEN for id=1.
+ Click Try it out.
+ Click Execute.
+ Expect 403 Forbidden.
+
+400 Bad Request:
+ Use id=abc.
+ Click Try it out.
+ Click Execute.
+ Expect 400 Bad Request.
+
+404 Not Found:
+ Use id=9999.
+ Click Try it out.
+Click Execute.
+ Expect 404 Not Found.
